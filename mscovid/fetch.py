@@ -5,6 +5,8 @@ import re
 from bs4 import BeautifulSoup
 import pandas as pd
 from io import StringIO
+from datetime import date
+
 
 
 class CovidException:
@@ -12,6 +14,7 @@ class CovidException:
 
 
 class CovidGetData:
+
     def __init__(self):
         self.url = "https://opendatasus.saude.gov.br/dataset/casos-nacionais"
         self.links = []
@@ -30,24 +33,21 @@ class CovidGetData:
                 self.links.append(link)
                 self.stateData[state_parse.search(link).group(1)].append(link)
 
-    def reporter_download(self, state='all'):
-
-        file_name = re.compile('([^/]+)$')
+    def reporter_download(self, state='all', format = 'csv'):
+        today = date.today()
+        file = '.'.join(['_'.join([state, today.strftime('%m%d%Y')]), format])
+        #name = re.compile('([^/]+)$')
         if state == all:
             for value in self.stateData.values():
-                for v in values:
+                for v in value:
                     data = requests.get(v)
                     data = pd.read_csv(StringIO(data.text))
                     #data.to_csv(file_name(v))
-                    data.to_csv(data, file_name(v))
+                    data.to_csv(file, mode='a')
         else:
             for v in self.stateData[state]:
                 data = requests.get(v)
                 data = pd.read_csv(StringIO(data.text))
                 #data.to_csv(file_name(v))
-                data.to_csv(data, file_name(v))
+                data.to_csv(file, mode='a')
 
-#    @property
-#    def reporter_download(self, state='all'):
-##        if state == 'all' :
-#           for state
