@@ -36,14 +36,25 @@ class CovidGetData:
                 self.links.append(link)
                 self.stateData[state_parse.search(link).group(1)].append(link)
 
-    def reporter(self, state='all', format='csv'):
+    def reporter(self, state='all', save=True, format='csv'):
         today = date.today()
-        self.file = '.'.join(['_'.join([state, today.strftime('%m%d%Y')]), format])
+        file = '.'.join(['_'.join([state, today.strftime('%m%d%Y')]), format])
+        data = dict()
         if state == all:
-            for value in self.stateData.values():
+            for key, value in self.stateData:
                 for v in value:
-                    data = requests.get(v)
+                    data[key] = list()
+                    data[key].append(requests.get(v))
         else:
             for v in self.stateData[state]:
-                data = requests.get(v)
-        return data
+                data[state] = list()
+                data[state].append(requests.get(v))
+#        return data
+        if save:
+            f = open(file, "a")
+            for key in data.keys():
+                for value in data[key]:
+                    f.write(value)
+            f.close()
+        else:
+            return data
