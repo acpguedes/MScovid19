@@ -14,6 +14,7 @@ class CovidException:
 
 
 class CovidGetData:
+    '''Class to get data from Ministério da Saúde (health ministry) about Covid in Brazil'''
 
     def __init__(self):
         self.url = "https://opendatasus.saude.gov.br/dataset/casos-nacionais"
@@ -22,8 +23,10 @@ class CovidGetData:
                              'df', 'rs', 'ba', 'al', 'se', 'es', 'pb', 'to', 'pa', 'mg', 'sc',
                              'rj', 'rn', 'ma', 'pi', 'am']
         self.stateData = dict((x, []) for x in self.stateSymbols)
+        self.file = ''
 
     def list_csv(self):
+        '''Metod to list files'''
         r = requests.get(self.url)
         soup = BeautifulSoup(r.text)
         state_parse = re.compile('dados-(\\w{2}).*\\.csv')
@@ -33,21 +36,14 @@ class CovidGetData:
                 self.links.append(link)
                 self.stateData[state_parse.search(link).group(1)].append(link)
 
-    def reporter_download(self, state='all', format = 'csv'):
+    def reporter(self, state='all', format='csv'):
         today = date.today()
-        file = '.'.join(['_'.join([state, today.strftime('%m%d%Y')]), format])
-        #name = re.compile('([^/]+)$')
+        self.file = '.'.join(['_'.join([state, today.strftime('%m%d%Y')]), format])
         if state == all:
             for value in self.stateData.values():
                 for v in value:
                     data = requests.get(v)
-                    data = pd.read_csv(StringIO(data.text))
-                    #data.to_csv(file_name(v))
-                    data.to_csv(file, mode='a')
         else:
             for v in self.stateData[state]:
                 data = requests.get(v)
-                data = pd.read_csv(StringIO(data.text))
-                #data.to_csv(file_name(v))
-                data.to_csv(file, mode='a')
-
+        return data
